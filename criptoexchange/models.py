@@ -1,6 +1,9 @@
 import requests
 from config import api_key
 
+class ModelError(Exception):
+    pass
+
 class TodoCoinApiIO:
     def __init__(self):
         self.criptos = []
@@ -16,3 +19,18 @@ class TodoCoinApiIO:
                 self.criptos.append(candidata["asset_id"])
             else:
                 self.no_criptos.append(candidata["asset_id"])
+
+class Cambio:
+    def __init__(self, cripto):
+        self.cripto = cripto
+        self.tasa = None
+        self.horafecha = None
+
+    def actualiza(self, api_key):
+        r = requests.get("https://rest.coinapi.io/v1/exchangerate/{}/EUR?apikey={}".format(self.cripto, api_key))
+        resultado = r.json()
+        if r.status_code == 200:
+            self.tasa = resultado['rate']
+            self.horafecha = resultado['time']
+        else:
+            raise ModelError("{}: {}".format(r.status_code, resultado["error"]))
